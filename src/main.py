@@ -6,6 +6,8 @@ import uuid
 from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
 
+from utils.io_functions import print_graph
+
 def build_graph():
     builder = StateGraph(AgentState)
 
@@ -22,6 +24,7 @@ def build_graph():
     
 def main():
     graph = build_graph()
+    print_graph(graph)
     thread_config = {"configurable": {"thread_id": uuid.uuid4()}}
     human_message = input("Digite sua entrada: ")
     user_input = AgentState(messages=HumanMessage(content=human_message))
