@@ -1,5 +1,5 @@
 from state import AgentState
-from tools import make_handoff_tool
+from tools import make_handoff_tool, generate_architecture_graph
 from outputs import ArchitectureOutput
 
 from langgraph.prebuilt import create_react_agent
@@ -89,11 +89,14 @@ def architecture_agent(state: AgentState) -> Command[Literal["human_node", "__en
         buffer = [last_ai_message] + [SystemMessage(content=system_prompt)]
     
     response = architecture_model.invoke(buffer)
+    generate_architecture_graph(response)
+
     goto = 'human_node'
     if response.route_next:
         goto = '__end__'
     
     buffer.append(AIMessage(content=response.model_dump_json()))
+    
     return Command(
         update={
             "messages" : state["messages"],
@@ -123,3 +126,4 @@ def human_node(state: AgentState) -> Command[Literal['assistent_agent','architec
         },
         goto=active_agent
     )
+    
