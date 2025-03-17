@@ -1,6 +1,7 @@
 from state import AgentState
 from tools import make_handoff_tool
 from outputs import ArchitectureOutput
+from utils.io_functions import extract_code, create_file
 
 from langgraph.prebuilt import create_react_agent
 from langgraph.types import Command, interrupt
@@ -11,7 +12,6 @@ from typing import Literal
 
 from dotenv import load_dotenv
 
-import os
 
 load_dotenv(override=True)
 
@@ -21,7 +21,10 @@ end_tool = [make_handoff_tool(agent_name="__end__")]
 model = ChatOpenAI(model="gpt-4o-mini")
 architecture_model = model.with_structured_output(ArchitectureOutput)
 
-def assistent_agent(state: AgentState) -> Command[Literal["human_node", "architecture_agent"]]:
+
+def assistent_agent(
+    state: AgentState,
+) -> Command[Literal["human_node", "architecture_agent"]]:
     system_prompt = """
     You are an expert in multi-agent system architectures. 
     Your role is to help the user build a detailed description of the system from an initial idea. 
@@ -58,17 +61,15 @@ def assistent_agent(state: AgentState) -> Command[Literal["human_node", "archite
     At the end of the interaction with the human, pass the collected information to "architect_agent".
     """
     assistent_model = create_react_agent(
-        model,
-        tools=architecture_tool,
-        prompt=system_prompt
+        model, tools=architecture_tool, prompt=system_prompt
     )
     response = assistent_model.invoke(state)
-    response['active_agent'] = 'assistent_agent'
-    return Command(
-        update=response, goto="human_node")
+    response["active_agent"] = "assistent_agent"
+    return Command(update=response, goto="human_node")
+
 
 def architecture_agent(state: AgentState) -> Command[Literal["human_node", "__end__"]]:
-    system_prompt =  """
+    system_prompt = """
     You are an expert in multi-agent system architectures. Your goal is to receive a system description and create the architecture of the system asked, using the structured output.
     
     IMPORTANT:
@@ -80,46 +81,161 @@ def architecture_agent(state: AgentState) -> Command[Literal["human_node", "__en
     buffer = state.get("buffer", [])
     if not buffer:
         filtered_messages = [
-            msg for msg in state["messages"]
+            msg
+            for msg in state["messages"]
             if isinstance(msg, AIMessage) and msg.content.strip() != ""
         ]
 
-        last_ai_message = next((msg for msg in reversed(filtered_messages) if isinstance(msg, AIMessage)), None)
-        
+        last_ai_message = next(
+            (msg for msg in reversed(filtered_messages) if isinstance(msg, AIMessage)),
+            None,
+        )
+
         buffer = [last_ai_message] + [SystemMessage(content=system_prompt)]
-    
+
     response = architecture_model.invoke(buffer)
-    goto = 'human_node'
+    goto = "human_node"
     if response.route_next:
-        goto = '__end__'
-    
+        goto = "developer"
+
     buffer.append(AIMessage(content=response.model_dump_json()))
     return Command(
         update={
-            "messages" : state["messages"],
+            "messages": state["messages"],
             "active_agent": "architecture_agent",
             "architecture_output": response,
-            "buffer" : buffer
-        }, 
-        goto=goto)
+            "buffer": buffer,
+        },
+        goto=goto,
+    )
 
-def human_node(state: AgentState) -> Command[Literal['assistent_agent','architecture_agent']]:
+
+def developer(state: AgentState) -> Command[Literal["human_node"]]:
+    system_prompt = """
+    ### Instruction:
+    You are a **multi-agent workflow system developer** specialized in **LangGraph**. Your primary task is to generate the code of a **multi-agent workflow system** where the **main logic is implemented through an LLM invocation**.
+
+    ## **Workflow Definition:**
+    Workflows are structured systems where **LLM calls and tools** are orchestrated through **predefined execution paths**.
+
+    ## **Multi-Agent System Requirements:**
+    A multi-agent system must define:
+
+    **Nodes** – Execution points that include:
+    - An **LLM invocation**, this is called an agent.
+    - Tool call or Functions call (for additional operations like input handling, API calls, or output formatting).
+    **Edges** – Connections between nodes that dictate the execution flow.
+
+    **Graph Construction** – Based on the agents defined by the user input and their interactions, you must:
+    - Define the **nodes** of the graph.
+    - Create the code of the nodes (if it is an agent, call an llm. If isn't, call a function).
+    - Establish the **edges** between them.
+
+    ## **Node Naming Convention:**
+    For consistency, node names must:
+    - Use the name given by the user input.
+    - Be formatted as **lowercase with underscores between words**.
+
+    ## **Graph Definition Example**
+    The system should be simple enough to not have a state:
+    ```python
+
+    from langgraph.graph import Graph, START
+    from langchain_openai import ChatOpenAI
+    from dotenv import load_dotenv
+
+
+    load_dotenv(override=True)
+    llm = ChatOpenAI(model="gpt-4o-mini")
+
+    def build_graph():
+        builder = Graph() // no state
+
+        # Nodes
+        builder.add_node("receive_input", node_name)
+        builder.add_node("evaluate_with_llm", evaluate_with_llm)
+        builder.add_node("print_output", print_output)
+
+        # Edges (Workflow Execution Order)
+        builder.add_edge(START, "receive_input")
+        builder.add_edge("receive_input", "evaluate_with_llm")
+        builder.add_edge("evaluate_with_llm", "print_output")
+
+        return builder.compile()
+    ```
+
+    ## **Common Node Definition Example**
+    ```
+        def receive_input(input):
+            return input
+    ```
+
+    ## **Agent Node Definition Example**
+    ```
+        def agent_node(input):
+            return llm.invoke(input)
+    ```
+
+    Your task is to generate the code of the graph and its nodes.
+    """
+
+    # Recupera o buffer de mensagens; se estiver vazio, usa o último AIMessage e a mensagem do sistema.
+    buffer = state.get("buffer", [])
+    filtered_messages = [
+        msg
+        for msg in state["messages"]
+        if isinstance(msg, AIMessage) and msg.content.strip() != ""
+    ]
+    last_ai_message = next(
+        (msg for msg in reversed(filtered_messages) if isinstance(msg, AIMessage)),
+        None,
+    )
+
+    if not buffer:
+        buffer = [last_ai_message, SystemMessage(content=system_prompt)]
+    else:
+        buffer.append(SystemMessage(content=system_prompt))
+
+    # Invoca o modelo com o prompt do agente developer.
+    response = model.invoke(buffer)
+
+    file_name = create_file(extract_code(response.content))
+    print(f"file created. name: {file_name}")
+
+    # Registra a resposta do modelo no buffer.
+    buffer.append(AIMessage(content=response.model_dump_json()))
+
+    # Atualiza o estado e direciona para o human_node para coleta de feedback.
+    return Command(
+        update={
+            "messages": state["messages"],
+            "active_agent": "developer",
+            "architecture_output": response,
+            "buffer": buffer,
+        },
+        goto="human_node",
+    )
+
+
+def human_node(
+    state: AgentState,
+) -> Command[Literal["assistent_agent", "architecture_agent"]]:
     """A node for collecting user input."""
     user_input = interrupt("Avalie a resposta do agente: ")
     active_agent = state["active_agent"]
-    
+
     message = HumanMessage(content=user_input)
-    
+
     buffer = state.get("buffer", [])
     if buffer:
         buffer.append(message)
-        
+
     return Command(
         update={
-            "messages" : state["messages"] + [message],
-            "buffer" : buffer,
-            "active_agent" : active_agent,
-            "architecture_output" : state.get("architecture_output", None)
+            "messages": state["messages"] + [message],
+            "buffer": buffer,
+            "active_agent": active_agent,
+            "architecture_output": state.get("architecture_output", None),
         },
-        goto=active_agent
+        goto=active_agent,
     )
