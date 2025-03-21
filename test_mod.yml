@@ -1,0 +1,124 @@
+app:
+  description: Gera piadas dado um tema escolhido pelo usuário.
+  mode: advanced-chat
+  name: Contador de piadas TESTE YAML
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  graph:
+    edges:
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: iniciar-source-llm1-target
+      source: iniciar
+      target: llm1
+      type: custom
+      
+      
+      
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: llm1-source-llm2-target
+      source: llm1
+      target: llm2
+      type: custom
+      
+      
+      
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: llm2-source-resposta-target
+      source: llm2
+      target: resposta
+      type: custom
+      
+      
+      
+    nodes:
+    
+    - data:
+        desc: ''
+        title: Iniciar
+        type: start
+        variables: []
+      id: iniciar
+      type: custom
+
+
+
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        memory: {}
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4
+          provider: langgenius/openai/openai
+        prompt_template:
+        - role: system
+          text: 'Seu trabalho é gerar o início de uma piada que mais tarde será passada
+            para outro agente que completará a piada.
+
+            O tema da piada será passada pelo usuário como entrada.
+
+            As piadas devem ser estruturadas em forma de pergunta e resposta, como
+            "O que é um ponto preto em cima do castelo?".'
+        title: LLM 1
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      id: llm1
+      type: custom
+
+
+
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - llm1
+          - text
+        desc: ''
+        # memory: {}
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: gpt-4
+          provider: langgenius/openai/openai
+        prompt_template:
+        - role: system
+          text: '{{#context#}} Dada a pergunta de uma piada gerada pelo primeiro agente,
+            complete a piada com uma resposta à piada que faça sentido e seja engraçada.'
+        title: LLM 2
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      id: llm2
+      type: custom
+
+
+      
+    - data:
+        answer: '{{#llm1.text#}}
+
+          {{#llm2.text#}}'
+        desc: ''
+        title: Resposta
+        type: answer
+        variables: []
+      id: resposta
+      type: custom

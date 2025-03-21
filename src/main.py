@@ -1,22 +1,31 @@
 from state import AgentState, DifyState
-from langgraph.graph import StateGraph, START, END
-from langchain_core.messages import HumanMessage
 from agents import assistent_agent, architecture_agent, human_node, supervisor_agent, node_creator, edge_creator
+from tools import create_llm_node
 import uuid
+
+from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.prebuilt import ToolNode
+from langchain_core.messages import HumanMessage
 
 from utils.io_functions import print_graph
 
 def build_graph():
+    tools = [create_llm_node]
+    
+    tool_node = ToolNode(tools)
 
     subgraph_builder = StateGraph(DifyState)
 
     subgraph_builder.add_node("supervisor_agent", supervisor_agent)
     subgraph_builder.add_node("node_creator", node_creator)
     subgraph_builder.add_node("edge_creator", edge_creator)
+    subgraph_builder.add_node("tool_node", tool_node)
 
     subgraph_builder.add_edge(START, "supervisor_agent")
+    subgraph_builder.add_edge("node_creator", "tool_node")
+    subgraph_builder.add_edge("tool_node", END)
     subgraph = subgraph_builder.compile()
 
     builder = StateGraph(AgentState)

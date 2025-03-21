@@ -1,5 +1,5 @@
 from state import AgentState, DifyState
-from tools import make_handoff_tool, sequence_diagram_generator, metadata_creator
+from tools import make_handoff_tool, sequence_diagram_generator, create_yaml_and_metadata, create_llm_node
 from outputs import ArchitectureOutput
 
 from langgraph.prebuilt import create_react_agent
@@ -14,7 +14,6 @@ from typing import Literal
 from dotenv import load_dotenv
 
 
-
 load_dotenv(override=True)
 
 architecture_tool = [make_handoff_tool(agent_name="architecture_agent")]
@@ -23,6 +22,7 @@ end_tool = [make_handoff_tool(agent_name="__end__")]
 model = ChatOpenAI(model="gpt-4o-mini")
 architecture_model = model.with_structured_output(ArchitectureOutput)
 
+node_creator_dify_model = model.bind_tools([create_llm_node])
 
 # Agente reponsável por analisar os requisitos do sistema e conversar com o usuário
 def assistent_agent(state: AgentState) -> Command[Literal["human_node", "architecture_agent"]]:
@@ -96,9 +96,9 @@ def human_node(state: AgentState) -> Command[Literal['assistent_agent','architec
 
 # Tool responsável por delegar a criação dos nodes e egdes do sistema
 def supervisor_agent(state: AgentState) -> Command[list['node_creator','edge_creator']]:
-    system_prompt =  agents_prompts.SUPERVISOR_AGENT
-    metadata_creator()
 
+    create_yaml_and_metadata("Sistema do usuario", 'Sistema do usuario')
+    
     novoState = DifyState = {
         "yaml_path": "../output/dify/dify.yml",
         "architecture_output": state["architecture_output"],
@@ -115,13 +115,14 @@ def supervisor_agent(state: AgentState) -> Command[list['node_creator','edge_cre
 def node_creator(state: DifyState) -> Command[Literal['__end__']]:
     system_prompt = agents_prompts.NODE_CREATOR
 
-    response = "" # llm_call
-
+    messages = state["messages"] + [system_prompt]
+    response = node_creator_dify_model.invoke(messages)
+    print(response)
     # tool call para adicionar os nós no YAML
     print("node_creator executado")
     return Command(
         update={
-            # colocando o response no state
+            "messages" : [response]
         },
     )
 
