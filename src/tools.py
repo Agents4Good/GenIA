@@ -6,7 +6,6 @@ from langgraph.prebuilt import InjectedState
 from langgraph.types import Command
 import networkx as nx
 import matplotlib.pyplot as plt
-from outputs import ArchitectureOutput
 import textwrap
 
 def make_handoff_tool(*, agent_name: str):
@@ -37,7 +36,7 @@ def make_handoff_tool(*, agent_name: str):
 
     return handoff_to_agent
 
-def generate_architecture_graph(architecture_output: ArchitectureOutput) -> nx.DiGraph:
+def generate_architecture_graph(architecture_output):
     G = nx.DiGraph()
 
     for agent in architecture_output.agents:
@@ -49,35 +48,42 @@ def generate_architecture_graph(architecture_output: ArchitectureOutput) -> nx.D
     visualize_graph(G)
 
 def visualize_graph(G: nx.DiGraph):
-    pos = nx.spring_layout(G, seed=42)  # Mantém posições fixas
+    pos = nx.spring_layout(G, seed=42)  # Keeps positions fixed for consistency
     plt.figure(figsize=(12, 8))
 
-    # Desenha nós e arestas com curva diferenciada para bidirecionais
+    # Draw nodes with specified colors and sizes
     nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=2000, edgecolors='black')
 
+    # Draw edges with arrows
     for (u, v, d) in G.edges(data=True):
-        rad = 0.2 if G.has_edge(v, u) else 0  # Se houver aresta inversa, faz curva
-        nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], edge_color='gray', 
-                               arrows=True, arrowstyle='-|>', connectionstyle=f"arc3,rad={rad}")
+        # Check if there is a reverse edge to adjust curvature
+        rad = 0.2 if G.has_edge(v, u) else 0
+        # Ensure arrows are drawn with the correct style
+        nx.draw_networkx_edges(
+            G, pos, edgelist=[(u, v)], edge_color='gray',
+            arrows=True, arrowstyle='-|>', connectionstyle=f"arc3,rad={rad}"
+        )
 
-    # Adiciona rótulos nos nós
+    # Add labels to nodes
     nx.draw_networkx_labels(G, pos, font_size=10, font_family='sans-serif')
 
-    # Melhora a exibição dos textos das arestas
+    # Improve edge label display
     edge_labels = nx.get_edge_attributes(G, 'description')
     
-    # Ajuste para deslocar os textos de arestas bidirecionais
+    # Adjust labels for bidirectional edges
     adjusted_labels = {}
     for (u, v), text in edge_labels.items():
         wrapped_text = "\n".join(textwrap.wrap(text, width=30))
-        rad = 0.2 if (v, u) in edge_labels else 0  # Desloca se for bidirecional
+        rad = 0.2 if (v, u) in edge_labels else 0
         adjusted_labels[(u, v)] = (wrapped_text, rad)
 
-    # Plota as labels das arestas ajustadas
+    # Plot adjusted edge labels
     for (u, v), (label, rad) in adjusted_labels.items():
-        nx.draw_networkx_edge_labels(G, pos, edge_labels={(u, v): label}, 
-                                     font_color='red', font_size=9, label_pos=0.5, rotate=False, 
-                                     bbox=dict(facecolor='white', edgecolor='none', alpha=0.7))
+        nx.draw_networkx_edge_labels(
+            G, pos, edge_labels={(u, v): label},
+            font_color='red', font_size=9, label_pos=0.5, rotate=False,
+            bbox=dict(facecolor='white', edgecolor='none', alpha=0.7)
+        )
 
     plt.title('Arquitetura do Sistema Multiagente', fontsize=14)
     plt.axis('off')
