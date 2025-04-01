@@ -11,7 +11,7 @@ from utils.plantuml_parser import generate_diagram, json_to_plantuml
 from utils.tools_utils import insert_node_yaml, insert_edge_yaml
 import threading
 
-YAML_PATH = os.path.join("generated_files", "dify.yaml")
+YAML_PATH = os.path.join("GenIA", "generated_files", "dify.yaml")
 semaphore = threading.Semaphore(1)
 
 

@@ -30,7 +30,7 @@ def json_to_plantuml(data: str) -> str:
     
     return plantuml_code
 
-def generate_diagram(plantuml_code, output_dir="generated_files"):
+def generate_diagram(plantuml_code, output_dir="GenIA/generated_files"):
     """Salva o código PlantUML em um arquivo e gera o diagrama"""
     puml_file = os.path.join(output_dir, "sequence_diagram.puml")
 
