@@ -8,6 +8,6 @@ from tools.dify import create_yaml_metadata
 def supervisor(state: AgentState) -> Command:
     yaml_metadata = create_yaml_metadata("Sistema do usuario", " ")
     novoState = DifyState(
-        architecture_output=state["architecture_output"], metadata_dict=yaml_metadata
+        architecture_output=state["architecture_output"], metadata_dict=yaml_metadata, nodes_dicts=[]
     )
     return Command(update=novoState, goto=["node_creator"])
