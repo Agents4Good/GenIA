@@ -17,10 +17,21 @@ from utils.dify import (
     call_dify_tools
 )
 
+from tools.dify import (
+    create_llm_node,
+    create_answer_node,
+    create_start_node,
+    create_contains_logic_node,
+    create_edges,
+    create_logic_edges,
+    create_http_node
+)
+
 import uuid
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
+from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage
 
@@ -29,12 +40,20 @@ from utils.genia.io_functions import print_graph
 
 def build_graph():
     subgraph_builder = StateGraph(DifyState)
+    tools_dify = [create_llm_node,
+    create_answer_node,
+    create_start_node,
+    create_contains_logic_node,
+    create_edges,
+    create_logic_edges,
+    create_http_node]
+    tool_node = ToolNode(tools_dify)
 
     subgraph_builder.add_node("supervisor_agent", supervisor)
     subgraph_builder.add_node("node_creator", node_creator)
     subgraph_builder.add_node("edge_creator", edge_creator)
-    subgraph_builder.add_node("tools_node_creator", call_dify_tools)
-    subgraph_builder.add_node("tools_edge_creator", call_dify_tools)
+    subgraph_builder.add_node("tools_node_creator", tool_node)
+    subgraph_builder.add_node("tools_edge_creator", tool_node)
     subgraph_builder.add_node("dify_yaml_builder", dify_yaml_builder)
 
     subgraph_builder.add_edge(START, "supervisor_agent")

@@ -4,6 +4,8 @@ from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langchain_core.messages import ToolMessage
 from langgraph.types import Command
+from langgraph.prebuilt import InjectedState
+from schema.dify import DifyState
 
 LLAMA = ["claude-3-haiku-20240307", "langgenius/anthropic/anthropic"]
 OPENAI = ["gpt-4", "langgenius/openai/openai"]
@@ -11,7 +13,8 @@ OPENAI = ["gpt-4", "langgenius/openai/openai"]
 
 @tool
 def create_llm_node(
-    tool_call_id: Annotated[str, InjectedToolCallId], 
+    tool_call_id: Annotated[str, InjectedToolCallId],
+    #state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     role: str,

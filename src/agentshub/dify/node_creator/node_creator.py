@@ -26,7 +26,17 @@ def node_creator(state: DifyState) -> Command:
 
     messages = state["messages"]
 
-    response = agent.invoke({'messages':messages,'nodes_dicts':[]},debug=True)
+    state = {
+    "architecture_output": state["architecture_output"],
+    "metadata_dict": state["metadata_dict"],
+    "nodes_dicts": [],
+    "edges_dicts": [],
+    }  
+    response = agent.invoke({'messages':messages,'state':state},debug=True)
     print("node_creator executado")
     print(response)
-    return Command(update={"messages": [response]})
+    return Command(update={"messages": [response],
+                           'architecture_output':state["architecture_output"],
+                           'metadata_dict': state['metadata_dict'],
+                           'nodes_dicts': state['nodes_dicts'],
+                           'edges_dicts': state['edges_dicts']})

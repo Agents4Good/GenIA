@@ -4,10 +4,13 @@ from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
 from langchain_core.messages import ToolMessage
 from langgraph.types import Command
+from langgraph.prebuilt import InjectedState
+from schema.dify import DifyState
 
 
 @tool
 def create_start_node(
+    #state: Annotated[DifyState, InjectedState],
     tool_call_id: Annotated[str, InjectedToolCallId], 
     title: str, node_id: str
     ):
@@ -40,6 +43,7 @@ def create_start_node(
 
 @tool
 def create_answer_node(
+    #state: Annotated[DifyState, InjectedState],
     tool_call_id: Annotated[str, InjectedToolCallId], 
     title: str, node_id: str, answer_variables: list[str]):
     """

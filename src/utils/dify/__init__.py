@@ -4,12 +4,14 @@ from .dify_gateway import (
 
 from .nodes import (
     dify_yaml_builder,
-    call_dify_tools
+    call_dify_tools,
+    tools_dify
 )
 
 
 __all__ = [
     "dify_import_yaml",
     "dify_yaml_builder",
-    "call_dify_tools"
+    "call_dify_tools",
+    'tools_dify'
 ]
