@@ -35,9 +35,6 @@ def node_creator(state: DifyState) -> Command:
     response = agent.invoke({'messages': messages, 'state': state})
     print("node_creator executado")
     print("-==-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-    print("Response Node Creator")
-    print(response)
-    print("-==-=-=-=-=-=-=-=-=-=-=-=-=-=-")
 
     response['active_agent'] = "node_creator"
     response['architecture_output'] = state["architecture_output"]

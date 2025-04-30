@@ -14,18 +14,8 @@ from agentshub.dify import (
 
 from utils.dify import (
     dify_yaml_builder,
-    call_dify_tools
 )
 
-from tools.dify import (
-    create_llm_node,
-    create_answer_node,
-    create_start_node,
-    create_contains_logic_node,
-    create_edges,
-    create_logic_edges,
-    create_http_node
-)
 
 import uuid
 
@@ -40,25 +30,16 @@ from utils.genia.io_functions import print_graph
 
 def build_graph():
     subgraph_builder = StateGraph(DifyState)
-    tools_dify = [create_llm_node,
-                  create_answer_node,
-                  create_start_node,
-                  create_contains_logic_node,
-                  create_edges,
-                  create_logic_edges,
-                  create_http_node]
 
     subgraph_builder.add_node("supervisor_agent", supervisor)
     subgraph_builder.add_node("node_creator", node_creator)
     subgraph_builder.add_node("edge_creator", edge_creator)
-    subgraph_builder.add_node("tools_edge_creator", call_dify_tools)
     subgraph_builder.add_node("dify_yaml_builder", dify_yaml_builder)
 
     subgraph_builder.add_edge(START, "supervisor_agent")
     subgraph_builder.add_edge("supervisor_agent", "node_creator")
     subgraph_builder.add_edge("node_creator", "edge_creator")
-    subgraph_builder.add_edge("edge_creator", "tools_edge_creator")
-    subgraph_builder.add_edge("tools_edge_creator", "dify_yaml_builder")
+    subgraph_builder.add_edge("edge_creator", "dify_yaml_builder")
     subgraph_builder.add_edge("dify_yaml_builder", END)
     subgraph = subgraph_builder.compile()
 

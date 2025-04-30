@@ -11,7 +11,6 @@ from schema.dify import DifyState
 
 @tool
 def create_logic_edges(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     edge_id: str,
     source_id: str,
@@ -31,7 +30,7 @@ def create_logic_edges(
     logic_edge = {"id": edge_id, "source": source_id,
                   "sourceHandle": source_handle, "target": target_id, "type": "custom"}
 
-    state["nodes_dicts"].append(logic_edge)
+    state["edges_dicts"].append(logic_edge)
 
     print("CREATE LOGIC EDGE")
     return logic_edge
@@ -39,7 +38,6 @@ def create_logic_edges(
 
 @tool
 def create_start_with_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -71,7 +69,6 @@ def create_start_with_logic_node(
 
 @tool
 def create_end_with_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -103,7 +100,6 @@ def create_end_with_logic_node(
 
 @tool
 def create_contains_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -135,7 +131,6 @@ def create_contains_logic_node(
 
 @tool
 def create_not_contains_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -167,7 +162,6 @@ def create_not_contains_logic_node(
 
 @tool
 def create_is_equals_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -199,7 +193,6 @@ def create_is_equals_logic_node(
 
 @tool
 def create_not_equals_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -231,7 +224,6 @@ def create_not_equals_logic_node(
 
 @tool
 def create_is_empty_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
@@ -261,7 +253,6 @@ def create_is_empty_logic_node(
 
 @tool
 def create_not_empty_logic_node(
-    tool_call_id: Annotated[str, InjectedToolCallId],
     state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,

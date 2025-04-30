@@ -2,13 +2,13 @@ from typing import Annotated
 
 from langchain_core.tools import tool
 from langchain_core.tools.base import InjectedToolCallId
-from langchain_core.messages import ToolMessage
-from langgraph.types import Command
+from langgraph.prebuilt import InjectedState
+from schema.dify import DifyState
 
 
 @tool
 def create_edges(
-    tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     edge_id: str,
     source_id: str,
     target_id: str
@@ -25,14 +25,5 @@ def create_edges(
             "target": target_id, "type": "custom"}
 
     print("CREATE EDGE")
-    return Command(
-        update={
-            "edges_dicts": [edge],
-            "messages": [
-                ToolMessage(
-                    f"Successfully added the edge between {source_id} and {target_id}",
-                    tool_call_id=tool_call_id,
-                )
-            ],
-        }
-    )
+    state['edges_dicts'].append(edge)
+    return edge
