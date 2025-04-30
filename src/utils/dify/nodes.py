@@ -26,7 +26,8 @@ def _write_dify_yaml(state: DifyState):
 
     file = Path(YAML_PATH)
     with open(file, "w") as outfile:
-        yaml.dump(yaml_dify, outfile, default_flow_style=False, allow_unicode=True)
+        yaml.dump(yaml_dify, outfile,
+                  default_flow_style=False, allow_unicode=True)
 
 
 def dify_yaml_builder(state: DifyState) -> Command:

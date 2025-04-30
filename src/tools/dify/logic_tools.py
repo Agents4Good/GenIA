@@ -5,11 +5,14 @@ from langchain_core.tools.base import InjectedToolCallId
 from langchain_core.messages import ToolMessage
 from langgraph.types import Command
 from .utils import create_logic_node
+from langgraph.prebuilt import InjectedState
+from schema.dify import DifyState
 
 
 @tool
 def create_logic_edges(
-    tool_call_id: Annotated[str, InjectedToolCallId], 
+    tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     edge_id: str,
     source_id: str,
     source_handle: Literal["true", "false"],
@@ -18,30 +21,26 @@ def create_logic_edges(
     """
     Cria uma aresta entre um nó de lógica e outro nó qualquer do workflow.
     Há duas saídas do mesmo nó de lógica, uma para "true" e outra para "false".
-    
+
     Parâmetros:
         - edge_id (str): Identificador único da aresta (minúsculas, sem caracteres especiais).
         - source_id (str): ID do nó de lógica (exemplo: "start_with_node").
         - source_handle (Literal["true", "false"]): Para qual saída booleana a aresta deve ser criada.
         - target_id (str): ID do nó de destino da aresta (exemplo: "llm1", "llm2").
     """
-    logic_edge = {"id": edge_id, "source": source_id, "sourceHandle": source_handle, "target": target_id, "type": "custom"}
-    
+    logic_edge = {"id": edge_id, "source": source_id,
+                  "sourceHandle": source_handle, "target": target_id, "type": "custom"}
+
+    state["nodes_dicts"].append(logic_edge)
+
     print("CREATE LOGIC EDGE")
-    return Command(
-        update={
-            "edges_dicts" : [logic_edge],
-            "messages": [
-                ToolMessage(
-                    f"Successfully added logic edge between {source_id} and {target_id}", tool_call_id=tool_call_id
-                )]
-        }
-    ) 
+    return logic_edge
 
 
 @tool
 def create_start_with_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     value: str,
@@ -49,7 +48,7 @@ def create_start_with_logic_node(
 ):
     """
     Cria um nó de lógica que verifica se uma variável começa com um valor específico.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -63,22 +62,17 @@ def create_start_with_logic_node(
         comparison_operator="start with",
         context_variable=context_variable
     )
-    
+
+    state["nodes_dicts"].append(start_with_node)
+
     print("START WITH NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [start_with_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added start with node", tool_call_id=tool_call_id
-                )]
-        }
-    )
-    
-    
+    return start_with_node
+
+
 @tool
 def create_end_with_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     value: str,
@@ -86,7 +80,7 @@ def create_end_with_logic_node(
 ):
     """
     Cria um nó de lógica que verifica se uma variável termina com um valor específico.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -100,22 +94,17 @@ def create_end_with_logic_node(
         comparison_operator="end with",
         context_variable=context_variable
     )
-    
+
+    state["nodes_dicts"].append(end_with_node)
+
     print("END WITH NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [end_with_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added end with node", tool_call_id=tool_call_id
-                )]
-        }
-    )
-    
-    
+    return end_with_node
+
+
 @tool
 def create_contains_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     value: str,
@@ -123,7 +112,7 @@ def create_contains_logic_node(
 ):
     """
     Cria um nó de lógica que verifica se uma variável contém um valor específico.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -137,22 +126,17 @@ def create_contains_logic_node(
         comparison_operator="contains",
         context_variable=context_variable
     )
-    
-    print("CONTAINS NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [contains_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added contains node", tool_call_id=tool_call_id
-                )]
-        }
-    )
 
-    
+    state["nodes_dicts"].append(contains_node)
+
+    print("CONTAINS NODE")
+    return contains_node
+
+
 @tool
 def create_not_contains_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     value: str,
@@ -160,7 +144,7 @@ def create_not_contains_logic_node(
 ):
     """
     Cria um nó de lógica que verifica se uma variável não contém um valor específico.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -174,22 +158,17 @@ def create_not_contains_logic_node(
         comparison_operator="not contains",
         context_variable=context_variable
     )
-    
-    print("NOT CONTAINS NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [not_contains_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added not contains node", tool_call_id=tool_call_id
-                )]
-        }
-    )
 
-    
+    state["nodes_dicts"].append(not_contains_node)
+
+    print("NOT CONTAINS NODE")
+    return not_contains_node
+
+
 @tool
 def create_is_equals_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     value: str,
@@ -197,7 +176,7 @@ def create_is_equals_logic_node(
 ):
     """
     Cria um nó de lógica que verifica se uma variável é igual a um valor específico.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -211,22 +190,17 @@ def create_is_equals_logic_node(
         comparison_operator="is",
         context_variable=context_variable
     )
-    
-    print("IS EQUALS NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [is_equals_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added is equals node", tool_call_id=tool_call_id
-                )]
-        }
-    )
 
-    
+    state["nodes_dicts"].append(is_equals_node)
+
+    print("IS EQUALS NODE")
+    return is_equals_node
+
+
 @tool
 def create_not_equals_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     value: str,
@@ -234,7 +208,7 @@ def create_not_equals_logic_node(
 ):
     """
     Cria um nó de lógica que verifica se uma variável não é igual a um valor específico.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -248,29 +222,24 @@ def create_not_equals_logic_node(
         comparison_operator="is not",
         context_variable=context_variable
     )
-    
-    print("NOT EQUALS NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [not_equals_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added not equals node", tool_call_id=tool_call_id
-                )]
-        }
-    )
 
-    
+    state["nodes_dicts"].append(not_equals_node)
+
+    print("NOT EQUALS NODE")
+    return not_equals_node
+
+
 @tool
 def create_is_empty_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     context_variable: str
 ):
     """
     Cria um nó de lógica que verifica se uma variável está vazia.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -283,29 +252,24 @@ def create_is_empty_logic_node(
         comparison_operator="empty",
         context_variable=context_variable
     )
-    
-    print("IS EMPTY NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [is_empty_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added is empty node", tool_call_id=tool_call_id
-                )]
-        }
-    )
 
-    
+    state["nodes_dicts"].append(is_empty_node)
+
+    print("IS EMPTY NODE")
+    return is_empty_node
+
+
 @tool
 def create_not_empty_logic_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     context_variable: str
 ):
     """
     Cria um nó de lógica que verifica se uma variável não está vazia.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -318,14 +282,8 @@ def create_not_empty_logic_node(
         comparison_operator="not empty",
         context_variable=context_variable
     )
-    
+
+    state["nodes_dicts"].append(not_empty_node)
+
     print("NOT EMPTY NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [not_empty_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added not empty node", tool_call_id=tool_call_id
-                )]
-        }
-    )
+    return not_empty_node

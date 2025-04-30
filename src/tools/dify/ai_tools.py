@@ -14,7 +14,7 @@ OPENAI = ["gpt-4", "langgenius/openai/openai"]
 @tool
 def create_llm_node(
     tool_call_id: Annotated[str, InjectedToolCallId],
-    #state: Annotated[DifyState, InjectedState],
+    state: Annotated[DifyState, InjectedState],
     title: str,
     node_id: str,
     role: str,
@@ -24,7 +24,7 @@ def create_llm_node(
 ):
     """
     Cria um nó de agente (LLM) para um workflow multiagente.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -63,13 +63,7 @@ def create_llm_node(
             "vision": {"enabled": False},
         },
     }
+
+    state["nodes_dicts"].append(llm_node)
     print("LLM NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [llm_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added the LLM node", tool_call_id=tool_call_id
-                )]
-        }
-    )
+    return llm_node

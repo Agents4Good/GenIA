@@ -10,7 +10,7 @@ from schema.dify import DifyState
 
 @tool
 def create_http_node(
-    #state: Annotated[DifyState, InjectedState],
+    state: Annotated[DifyState, InjectedState],
     tool_call_id: Annotated[str, InjectedToolCallId],
     title: str,
     node_id: str
@@ -35,14 +35,7 @@ def create_http_node(
             "type": "http-request"
         }
     }
-    
+    state["nodes_dicts"].append(http_node)
+
     print("HTTP NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [http_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added the HTTP node", tool_call_id=tool_call_id
-                )]
-        }
-    )
+    return http_node

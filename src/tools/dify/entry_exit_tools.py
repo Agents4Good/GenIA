@@ -10,10 +10,10 @@ from schema.dify import DifyState
 
 @tool
 def create_start_node(
-    #state: Annotated[DifyState, InjectedState],
-    tool_call_id: Annotated[str, InjectedToolCallId], 
+    state: Annotated[DifyState, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId],
     title: str, node_id: str
-    ):
+):
     """
     Cria o nó inicial do workflow responsável por capturar as entradas do usuário.
 
@@ -28,29 +28,23 @@ def create_start_node(
         "type": "custom",
         "data": {"desc": "", "title": title, "type": "start", "variables": []},
     }
-    
+
+    state["nodes_dicts"].append(start_node)
+
     print("START NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [start_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added the start node", tool_call_id=tool_call_id
-                )]
-        }
-    )
-    
+    return start_node
+
 
 @tool
 def create_answer_node(
-    #state: Annotated[DifyState, InjectedState],
-    tool_call_id: Annotated[str, InjectedToolCallId], 
-    title: str, node_id: str, answer_variables: list[str]):
+        state: Annotated[DifyState, InjectedState],
+        tool_call_id: Annotated[str, InjectedToolCallId],
+        title: str, node_id: str, answer_variables: list[str]):
     """
     Cria o nó final do workflow responsável por exibir os outputs.
 
     Esse nó deve ser criado por último no workflow.
-    
+
     Parâmetros:
         - title (str): Nome do nó.
         - node_id (str): Identificador único baseado no nome (minúsculas, sem caracteres especiais).
@@ -67,14 +61,8 @@ def create_answer_node(
             "variables": [],
         },
     }
-    
+
+    state["nodes_dicts"].append(answer_node)
+
     print("ANSWER NODE")
-    return Command(
-        update={
-            "nodes_dicts" : [answer_node],
-            "messages": [
-                ToolMessage(
-                    "Successfully added the answer node", tool_call_id=tool_call_id
-                )]
-        }
-    )
+    return answer_node

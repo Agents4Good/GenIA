@@ -21,13 +21,10 @@ def architect(state: AgentState) -> Command[Literal["human_node", "dify"]]:
         ]
 
         last_ai_message = next(
-            (msg for msg in reversed(filtered_messages) if isinstance(msg, AIMessage)),
+            (msg for msg in reversed(filtered_messages)
+             if isinstance(msg, AIMessage)),
             None,
         )
-
-        print("============================================================")
-        print(last_ai_message)
-        print("============================================================")
 
         var = model.invoke(
             f"A seguinte mensagem descreve um sistema que deve ser desenvolvido. Seu objetivo é informar o objetivo do sistema, extrair os requisitos do usuário e listar as funcionalidades principais. Descrição: {last_ai_message.content}"
@@ -35,15 +32,7 @@ def architect(state: AgentState) -> Command[Literal["human_node", "dify"]]:
 
         buffer = [SystemMessage(content=system_prompt).content] + [var.content]
 
-    print("============================================================")
-    print(buffer)
-    print("============================================================")
-
     response = architecture_model.invoke(buffer)
-
-    print("============================================================")
-    print(response)
-    print("============================================================")
 
     response = extract_json(response.content)
 

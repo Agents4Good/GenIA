@@ -21,7 +21,8 @@ def create_edges(
         - source_id (str): ID do nó de origem da aresta (exemplo: "start_node", "llm1").
         - target_id (str): ID do nó de destino da aresta (exemplo: "answer_node", "llm2").
     """
-    edge = {"id": edge_id, "source": source_id, "target": target_id, "type": "custom"}
+    edge = {"id": edge_id, "source": source_id,
+            "target": target_id, "type": "custom"}
 
     print("CREATE EDGE")
     return Command(

@@ -21,22 +21,28 @@ def node_creator(state: DifyState) -> Command:
     ]
 
     agent = create_react_agent(
-        node_creator_dify_model, prompt=NODE_CREATOR, tools= tools
+        node_creator_dify_model, prompt=NODE_CREATOR, tools=tools
     )
 
     messages = state["messages"]
 
     state = {
-    "architecture_output": state["architecture_output"],
-    "metadata_dict": state["metadata_dict"],
-    "nodes_dicts": [],
-    "edges_dicts": [],
-    }  
-    response = agent.invoke({'messages':messages,'state':state},debug=True)
+        "architecture_output": state["architecture_output"],
+        "metadata_dict": state["metadata_dict"],
+        "nodes_dicts": [],
+        "edges_dicts": [],
+    }
+    response = agent.invoke({'messages': messages, 'state': state})
     print("node_creator executado")
+    print("-==-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+    print("Response Node Creator")
     print(response)
-    return Command(update={"messages": [response],
-                           'architecture_output':state["architecture_output"],
-                           'metadata_dict': state['metadata_dict'],
-                           'nodes_dicts': state['nodes_dicts'],
-                           'edges_dicts': state['edges_dicts']})
+    print("-==-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+
+    response['active_agent'] = "node_creator"
+    response['architecture_output'] = state["architecture_output"]
+    response['metadata_dict'] = state['metadata_dict']
+    response['nodes_dicts'] = state['nodes_dicts']
+    response['edges_dicts'] = state['edges_dicts']
+
+    return Command(update=response)
