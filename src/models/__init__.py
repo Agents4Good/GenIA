@@ -1,8 +1,10 @@
 from .models import (
-    model
+    model,
+    structured_model
 )
 
 
 __all__ = [
-    "model"
+    "model",
+    "structured_model"
 ]

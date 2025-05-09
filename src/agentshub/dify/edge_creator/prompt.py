@@ -9,6 +9,7 @@ EDGE_CREATOR = """
 
     - Você **não deve** retornar nenhuma explicação ou texto. **Use apenas chamadas de ferramentas**.
     - Se não for possível criar conexões, retorne uma lista de chamadas vazia.
-
-    IMPORTANTE: TODOS OS NÓS DEVEM SER CONECTADOS, INCLUINDO O NÓ FINAL.
+    - CRIE EDGES ENTRE OS NÓS A PARTIR DO ID DELES QUE FORAM ENVIADOS PARA VOCÊ.
+    
+    IMPORTANTE: TODOS OS NÓS DEVEM SER CONECTADOS, INCLUINDO O NÓ FINAL E INICIAL.
     """

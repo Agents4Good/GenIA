@@ -9,7 +9,6 @@ from .plantuml_parser import (
     generate_diagram
 )
 
-
 __all__ = [
     "get_generated_files_path",
     "get_dotenv_path",

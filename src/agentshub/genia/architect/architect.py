@@ -3,9 +3,9 @@ from .prompt import ARCHITECT_AGENT
 from langgraph.types import Command
 from typing import Literal
 from langchain_core.messages import SystemMessage, AIMessage
-from models.genia import architecture_model
-from models import model
-from .utils import extract_json
+from models import model, structured_model
+from utils import extract_json
+from .structured_output import ArchitectureOutput
 from tools.genia.utils import sequence_diagram_generator
 
 
@@ -21,31 +21,21 @@ def architect(state: AgentState) -> Command[Literal["human_node", "dify"]]:
         ]
 
         last_ai_message = next(
-            (msg for msg in reversed(filtered_messages) if isinstance(msg, AIMessage)),
+            (msg for msg in reversed(filtered_messages)
+             if isinstance(msg, AIMessage)),
             None,
         )
 
-        print("============================================================")
-        print(last_ai_message)
-        print("============================================================")
+        buffer = [SystemMessage(
+            content=system_prompt).content] + [last_ai_message.content]
 
-        buffer = [SystemMessage(content=system_prompt).content] + [last_ai_message.content]
+    response = structured_model.invoke(buffer)
 
-    print("============================================================")
-    print(buffer)
-    print("============================================================")
-
-    response = architecture_model.invoke(buffer)
-
-    print("============================================================")
-    print(response)
-    print("============================================================")
-
-    response = extract_json(response.content)
+    response = extract_json(response.content, ArchitectureOutput)
 
     goto = "human_node"
     if response.route_next:
-        goto = "dify",
+        goto = "dify"
         state["messages"].append(AIMessage(content=response.model_dump_json()))
 
     sequence_diagram_generator.invoke(response.model_dump_json())

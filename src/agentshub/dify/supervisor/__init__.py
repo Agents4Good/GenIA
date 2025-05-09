@@ -4,5 +4,5 @@ from .supervisor import (
 
 
 __all__ = [
-    "supervisor"
+    "supervisor",
 ]
